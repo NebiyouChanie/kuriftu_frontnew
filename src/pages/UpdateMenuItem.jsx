@@ -11,9 +11,9 @@ import {toast} from "react-toastify";
 import { useEffect } from 'react';
 import { useNavigate, useParams } from "react-router-dom";
 import { Textarea } from "@/components/ui/textarea"; 
-import Dropdown from "../components/Dropdown"; 
+import Dropdown from "@/components/Dropdown"; 
 import { Checkbox } from "@/components/ui/checkbox";  
-import ImageUpload from "../components/ImageUpload"; 
+import ImageUpload from "@/components/ImageUpload"; 
 
 
 

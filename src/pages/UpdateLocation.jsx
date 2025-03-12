@@ -9,7 +9,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import ImageUpload from "../components/MultipleImageUpload";
+import ImageUpload from "@/components/MultipleImageUpload";
 import { BASE_URL } from "@/lib/utils";
 
 const locationSchema = z.object({
@@ -66,7 +66,6 @@ export default function UpdateLocation() {
   }, [locationId, form]);
 
   const onSubmit = async (data) => {
-    console.log("🚀 ~ onSubmit ~ data:", data)
     try {
       // Format phone number
       if (data.phoneNumber.startsWith("09")) {

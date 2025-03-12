@@ -20,7 +20,7 @@ import {
     DropdownMenuShortcut
   } from "@/components/ui/dropdown-menu"; 
   import { ArrowDown, Trash, PlusCircle,Eraser } from "lucide-react";
-  import Dropdown from "../components/DropdownMenu"; 
+  import Dropdown from "@/components/DropdownMenu"; 
 
 
 
