@@ -6,7 +6,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import ImageUpload from "@/components/MultipleImageUPload";
+import ImageUpload from "@/components/MultipleImageUpload";
 import { BASE_URL } from "@/lib/utils";
 import { toast } from "react-toastify";
 
