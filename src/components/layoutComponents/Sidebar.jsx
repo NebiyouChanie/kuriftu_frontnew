@@ -4,7 +4,6 @@ import {
   LayoutDashboard, UserRound, ShoppingCartIcon, BookOpenText, 
   NotebookPen, BarChart4, StarIcon, ChevronDown, ChevronUp, LocateIcon
 } from "lucide-react";
-import Logo from "../../assets/boss-burger-logo.svg";
 
 const menuItems = [
   { name: "Dashboard", path: "/", icon: <LayoutDashboard /> },
@@ -57,8 +56,8 @@ const Sidebar = () => {
 
   return (
     <div className="w-72 h-screen border-r p-5 rounded-md ">
-      <div className="h-20 mb-8 flex justify-start">
-        <img src={Logo} alt="boss burger logo"/>
+      <div className="h-20 mb-8 flex justify-center items-center">
+         <p className="font-bold text-xl" >Menu Admin</p>
       </div>
       <nav>
         <ul className="flex flex-col gap-3">
