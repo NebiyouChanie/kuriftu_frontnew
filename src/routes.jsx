@@ -5,7 +5,7 @@ import Orders from "./pages/Orders/Orders";
 import Menu from "./pages/Menu";
 import Reviews from "./pages/Reviews";
 import Analytics from "./pages/Analytics";
-import Reservation from "./pages/Reservatons/Reservation";
+import Reservation from "./pages/Reservation";
 import AddMenuItem from "./pages/AddMenuItem";
 import MenuItemDetail from "./pages/MenuItemDetail";
 import AddOrder from "./pages/AddOrder";
@@ -63,7 +63,7 @@ const AppRoutes = () => {
       </Route>
 
       {/* Reservation Route with Nested Sub-Routes */}
-      <Route path="/reservation" element={<ReservationLayout />}>
+      <Route path="/cheforders" element={<ReservationLayout />}>
         <Route index element={<Reservation />} />
         <Route path="add-reservation" element={<AddReservation />} />
         <Route path=":reservationId/update" element={<UpdateReservation />} />

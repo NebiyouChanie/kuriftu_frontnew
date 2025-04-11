@@ -27,7 +27,7 @@ const menuItems = [
   },
     
   { 
-    name: "Reservation", path: "/reservation", icon: <NotebookPen />,
+    name: "Chef Orders", path: "/cheforders", icon: <NotebookPen />,
     subLinks: [
       { name: "Add Reservation", path: "/reservation/add-reservation" },
     ]

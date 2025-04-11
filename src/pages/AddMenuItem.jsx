@@ -6,37 +6,53 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import ImageUpload from "../components/ImageUpload"; 
+import ImageUpload from "@/components/ImageUpload";
 import Dropdown from "../components/Dropdown"; 
 import { Textarea } from "@/components/ui/textarea";
 import { BASE_URL } from "@/lib/utils";
 import { toast } from "react-toastify";
 
-// Define the validation schema using Zod
+// Updated validation schema to match foodItem model
 const formSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   description: z.string().trim().min(1, "Description is required"),
   price: z.preprocess((val) => Number(val), z.number().min(0, "Price must be a positive number")),
-  category: z.string().trim().min(1, "Category is required"),
-  isSpecial: z.boolean().optional(),
-  isMainMenu: z.boolean().optional(),
-  stock: z.enum(["in stock", "out of stock"]).default("in stock"),
+  preparationTime: z.preprocess((val) => Number(val), z.number().min(0, "Preparation time must be a positive number")),
+  ingredients: z.preprocess(
+    (val) => {
+      // Handle both string input and array input
+      if (Array.isArray(val)) return val;
+      if (typeof val === 'string') return val.split(',').map(item => item.trim()).filter(item => item);
+      return [];
+    },
+    z.array(z.string()).min(1, "At least one ingredient is required")
+  ),  category: z.string().trim().min(1, "Category is required"),
+  isInStock: z.boolean().default(true),
+  dietaryTags: z.array(z.string()).optional(),
   imageUrl: z.string().url("Invalid image URL").optional().or(z.literal("")),
 });
 
 function AddMenuItem() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [categories, setCategories] = useState([])
+  const [categories, setCategories] = useState([]);
+  const dietaryOptions = [
+    'vegetarian', 'vegan', 'gluten-free',
+    'halal', 'kosher', 'dairy-free',
+    'nut-free', 'organic'
+  ];
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      isSpecial: false,
-      isMainMenu: false,
+      ingredients: [],
+      isInStock: true,
+      dietaryTags: [],
+      images: [],
     },
   });
 
   const onSubmit = async (data) => {
+    console.log("🚀 ~ onSubmit ~ data:", data.images)
     try {
       setIsSubmitting(true);
       const response = await fetch(`${BASE_URL}/foodItems/addFoodItem`, {
@@ -54,7 +70,7 @@ function AddMenuItem() {
         return;
       }
 
-      toast.success("Application Submitted.");
+      toast.success("Food item added successfully!");
      } catch (error) {
       toast.error("Something went wrong. Please try again.");
      } finally {
@@ -62,22 +78,20 @@ function AddMenuItem() {
     }
   };
 
-
-    // Fetch categories
-    useEffect(() => {
-      const fetchMedicines = async () => {
-        const response = await fetch(`${BASE_URL}/categories`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',  
-          },
-        });
-        const data = await response.json();
-        setCategories(data.data); 
-      };
-  
-      fetchMedicines();
-    }, []);
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const response = await fetch(`${BASE_URL}/categories`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',  
+        },
+      });
+      const data = await response.json();
+      setCategories(data.data); 
+    };
+    fetchCategories();
+  }, []);
 
   return (
     <div className="container p-6">
@@ -100,6 +114,7 @@ function AddMenuItem() {
                 )}
               />
 
+
               {/* Category */}
               <FormField
                 control={form.control}
@@ -108,12 +123,12 @@ function AddMenuItem() {
                   <FormItem>
                     <FormLabel>Category *</FormLabel>
                     <FormControl>
-                    <Dropdown categories={categories} onSelect={(category)=>{field.onChange(category)}} {...field} />
+                      <Dropdown categories={categories} onSelect={(category) => {field.onChange(category)}} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
-                />
+              />
 
               {/* Description */}
               <FormField
@@ -145,27 +160,53 @@ function AddMenuItem() {
                 )}
               />
 
-              {/* isSpecial Checkbox */}
+              {/* Preparation Time */}
               <FormField
                 control={form.control}
-                name="isSpecial"
+                name="preparationTime"
                 render={({ field }) => (
-                  <FormItem className="flex items-center space-x-3">
+                  <FormItem>
+                    <FormLabel>Preparation Time (minutes) *</FormLabel>
                     <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={(checked) => field.onChange(checked)}
-                      />
+                      <Input type="number" placeholder="15" {...field} />
                     </FormControl>
-                    <FormLabel >Special Item</FormLabel>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* isMainMenu Checkbox */}
+              {/* Ingredients */}
+              <FormField
+                  control={form.control}
+                  name="ingredients"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ingredients (comma separated) *</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Enter ingredients separated by commas (e.g., flour, sugar, eggs)"
+                          onChange={(e) => {
+                            // This will trigger the Zod preprocessing
+                            field.onChange(e.target.value);
+                          }}
+                          value={
+                            Array.isArray(field.value) 
+                              ? field.value.join(', ') 
+                              : typeof field.value === 'string' 
+                                ? field.value 
+                                : ''
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+              {/* Stock Status */}
               <FormField
                 control={form.control}
-                name="isMainMenu"
+                name="isInStock"
                 render={({ field }) => (
                   <FormItem className="flex items-center space-x-3">
                     <FormControl>
@@ -174,7 +215,48 @@ function AddMenuItem() {
                         onCheckedChange={(checked) => field.onChange(checked)}
                       />
                     </FormControl>
-                    <FormLabel>Main Menu Item</FormLabel>
+                    <FormLabel>In Stock</FormLabel>
+                  </FormItem>
+                )}
+              />
+
+
+              {/* Dietary Tags */}
+              <FormField
+                control={form.control}
+                name="dietaryTags"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Dietary Tags</FormLabel>
+                    <div className="grid grid-cols-2 gap-2">
+                      {dietaryOptions.map((option) => (
+                        <FormField
+                          key={option}
+                          control={form.control}
+                          name="dietaryTags"
+                          render={({ field }) => (
+                            <FormItem className="flex items-center space-x-2">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(option)}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([...field.value, option])
+                                      : field.onChange(
+                                          field.value?.filter((value) => value !== option)
+                                        )
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="text-sm font-normal">
+                                {option}
+                              </FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                      ))}
+                    </div>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -195,6 +277,7 @@ function AddMenuItem() {
                   </FormItem>
                 )}
               />
+
             </div>
           </div>
 
