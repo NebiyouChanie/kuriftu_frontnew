@@ -33,7 +33,7 @@ const ChefDashboard = () => {
   const fetchOrders = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('https://kuriftu-backend-l9gk.onrender.com/orders/chef');
+      const response = await fetch('https://kuriftu-backend-l9gk.onrender.com/api/orders/chef');
       
       if (!response.ok) {
         throw new Error(`Failed to fetch orders: ${response.status}`);
