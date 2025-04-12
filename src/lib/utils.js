@@ -6,7 +6,7 @@ export function cn(...inputs) {
 }
 
 
-export const  BASE_URL = "https://kuriftu-backend-l9gk.onrender.com"
+export const  BASE_URL = "https://kuriftu-backend-l9gk.onrender.com/api"
 
 
 
