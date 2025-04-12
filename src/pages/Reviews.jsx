@@ -22,7 +22,7 @@ const Reviews = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:5001/api/orders/analytics/satisfaction');
+        const response = await axios.get('https://kuriftu-backend-l9gk.onrender.com/orders/analytics/satisfaction');
         
         const formattedReviews = response.data.recentFeedback.map((feedback) => ({
           id: feedback._id,
@@ -71,7 +71,7 @@ const Reviews = () => {
   const handleReply = async (reviewId, foodItemId) => {
     try {
       setIsSubmittingReply(true);
-      await axios.post(`http://localhost:5001/api/orders/food-items/${foodItemId}/feedback/${reviewId}/reply`, { 
+      await axios.post(`https://kuriftu-backend-l9gk.onrender.com/orders/food-items/${foodItemId}/feedback/${reviewId}/reply`, { 
         reply: replyText 
       });
       
