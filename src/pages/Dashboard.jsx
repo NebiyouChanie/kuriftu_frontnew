@@ -1,18 +1,13 @@
-
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { 
-  Banknote, 
-  ArrowUp, 
   ShoppingCartIcon, 
-  NotebookPen, 
-  UserPlus,
-  Star,
   Utensils,
   Users,
   PieChart,
   BarChart2,
-  Trophy
+  Trophy,
+  Star
 } from "lucide-react";
 import axios from "axios";
 import { BASE_URL } from "@/lib/utils";
@@ -39,42 +34,43 @@ import {
 // Color palette
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
-// Animated Number Component
-function AnimatedNumber({ value }) {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    const controls = setInterval(() => {
-      setCount((prev) => {
-        const step = (value - prev) / 4; 
-        return prev + step > value ? value : prev + step;
-      });
-    }, 50);
-
-    return () => clearInterval(controls);
-  }, [value]);
-
-  return (
-    <motion.span
-      animate={{ opacity: [0, 1], y: [5, 0] }}
-      transition={{ duration: 0.5 }}
-      className="font-bold"
-    >
-      {Math.round(count)}
-    </motion.span>
-  );
-}
-
 // Dashboard Component
 function Dashboard() {
-  const [data, setData] = useState(null);
+  const [foodRating, setFoodRating] = useState(null);
+  const [waiterRating, setWaiterRating] = useState(null);
+  const [topWaiters, setTopWaiters] = useState([]);
+  const [topFoods, setTopFoods] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/analytics/dashboard`);
-        setData(response.data.data);
+        // Fetch food ratings
+        const foodResponse = await axios.get(`${BASE_URL}/waiters//overall-rating`);
+        setFoodRating(foodResponse.data);
+        
+        // Fetch waiter ratings
+        const waiterResponse = await axios.get(`${BASE_URL}/waiters/overall-waiters`);
+        setWaiterRating(waiterResponse.data);
+        
+        // For demo purposes, creating mock data for top waiters and foods
+        // In a real app, you would fetch these from your API
+        setTopWaiters([
+          { name: "John Doe", rating: 4.5, reviews: 12 },
+          { name: "Jane Smith", rating: 4.3, reviews: 8 },
+          { name: "Mike Johnson", rating: 4.1, reviews: 15 },
+          { name: "Sarah Williams", rating: 3.9, reviews: 7 },
+          { name: "David Brown", rating: 3.8, reviews: 9 }
+        ]);
+        
+        setTopFoods([
+          { name: "Margherita Pizza", rating: 4.7, reviews: 25 },
+          { name: "Pasta Carbonara", rating: 4.6, reviews: 18 },
+          { name: "Caesar Salad", rating: 4.5, reviews: 15 },
+          { name: "Tiramisu", rating: 4.4, reviews: 12 },
+          { name: "Grilled Salmon", rating: 4.3, reviews: 10 }
+        ]);
+        
       } catch (error) {
         console.error("Error fetching dashboard data", error);
       } finally {
@@ -93,7 +89,7 @@ function Dashboard() {
             Loading Dashboard...
           </h2>
           <div className="flex gap-8 flex-wrap">
-            {[1, 2, 3, 4, 5, 6].map((_, index) => (
+            {[1, 2, 3, 4].map((_, index) => (
               <div
                 key={index}
                 className="flex flex-col gap-4 w-72 p-4 border rounded-md bg-green-50"
@@ -109,38 +105,6 @@ function Dashboard() {
     );
   }
 
-  // Prepare data for charts
-  const foodByCategoryData = data?.foodCategoryAnalysis?.data?.map(item => ({
-    name: item._id,
-    rating: item.averageRating.toFixed(1),
-    items: item.totalItems,
-    topItem: item.topRatedItem.name
-  }));
-
-  const topFoodsData = data?.foodRatingAnalysis?.data?.foods
-    ?.slice(0, 5)
-    .map(food => ({
-      name: food.name,
-      rating: food.rating.toFixed(1),
-      reviews: food.totalFeedback
-    }));
-
-  const topWaitersData = data?.waiterRatingAnalysis?.data?.waiters
-    ?.slice(0, 5)
-    .map(waiter => ({
-      name: waiter.name,
-      rating: waiter.averageRating.toFixed(1),
-      reviews: waiter.totalFeedback
-    }));
-
-  const orderStatusData = data?.monthlyOrderAnalysis?.data?.statusDistribution?.map(status => ({
-    name: status._id,
-    value: status.count
-  }));
-
-
-
-
   return (
     <div className="p-5 flex flex-col gap-12">
       {/* Overview Cards */}
@@ -149,28 +113,28 @@ function Dashboard() {
         <div className="flex gap-8 flex-wrap">
           {[
             {
-              label: "Total Food Categories",
-              value: data?.foodCategoryAnalysis?.data?.length || 0,
-              icon: <Utensils className="text-purple-600" size={24} />,
-              color: "bg-purple-100"
-            },
-            {
               label: "Average Food Rating",
-              value: data?.foodRatingAnalysis?.data?.overallStats?.averageRating?.toFixed(1) || 0,
+              value: foodRating?.averageRating || 0,
               icon: <Star className="text-yellow-500" size={24} />,
               color: "bg-yellow-100"
             },
             {
+              label: "Total Food Reviews",
+              value: foodRating?.totalReviews || 0,
+              icon: <Utensils className="text-green-600" size={24} />,
+              color: "bg-green-100"
+            },
+            {
               label: "Average Waiter Rating",
-              value: data?.waiterRatingAnalysis?.data?.overallStats?.averageRating?.toFixed(1) || 0,
+              value: waiterRating?.averageRating || 0,
               icon: <Users className="text-blue-500" size={24} />,
               color: "bg-blue-100"
             },
             {
-              label: "This Month Orders",
-              value: data?.monthlyOrderAnalysis?.data?.dailyStats?.reduce((sum, day) => sum + day.totalOrders, 0) || 0,
-              icon: <ShoppingCartIcon className="text-green-600" size={24} />,
-              color: "bg-green-100"
+              label: "Total Waiters",
+              value: waiterRating?.totalWaiters || 0,
+              icon: <Users className="text-purple-600" size={24} />,
+              color: "bg-purple-100"
             },
           ].map((item, index) => (
             <motion.div
@@ -198,77 +162,6 @@ function Dashboard() {
 
       {/* Main Analytics Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Food Ratings by Category */}
-        <div className="flex flex-col gap-4 p-6 border rounded-lg bg-white shadow-sm">
-          <div className="flex items-center gap-2">
-            <BarChart2 className="text-purple-600" />
-            <h2 className="font-semibold text-lg">Food Ratings by Category</h2>
-          </div>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={foodByCategoryData}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                <XAxis dataKey="name" />
-                <YAxis domain={[0, 5]} />
-                <Tooltip 
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
-                  formatter={(value, name, props) => {
-                    if (name === 'rating') return [`${value}/5`, 'Average Rating'];
-                    if (name === 'items') return [value, 'Total Items'];
-                    return [value, name];
-                  }}
-                />
-                <Bar dataKey="rating" fill="#8884d8" name="Average Rating">
-                  {foodByCategoryData?.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="text-sm text-gray-500 mt-2">
-            <p>Top in each category: {foodByCategoryData?.map(item => 
-              `${item.topItem} (${item.rating})`).join(', ')}
-            </p>
-          </div>
-        </div>
-
-
-
-
-        {/* Order Status Distribution */}
-        <div className="flex flex-col gap-4 p-6 border rounded-lg bg-white shadow-sm">
-          <div className="flex items-center gap-2">
-            <PieChart className="text-green-600" />
-            <h2 className="font-semibold text-lg">Order Status This Month</h2>
-          </div>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={orderStatusData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  nameKey="name"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                >
-                  {orderStatusData?.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
-                  formatter={(value, name, props) => [`${value} orders`, props.payload.name]}
-                />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
         {/* Top Rated Foods */}
         <div className="flex flex-col gap-4 p-6 border rounded-lg bg-white shadow-sm">
           <div className="flex items-center gap-2">
@@ -277,7 +170,7 @@ function Dashboard() {
           </div>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={topFoodsData}>
+              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={topFoods}>
                 <PolarGrid />
                 <PolarAngleAxis dataKey="name" />
                 <PolarRadiusAxis angle={30} domain={[0, 5]} />
@@ -296,7 +189,7 @@ function Dashboard() {
             </ResponsiveContainer>
           </div>
           <div className="flex justify-between text-sm text-gray-500 mt-2">
-            {topFoodsData?.map((food, index) => (
+            {topFoods?.map((food, index) => (
               <div key={index} className="text-center">
                 <p className="font-medium">{food.name}</p>
                 <p>{food.rating}/5</p>
@@ -304,9 +197,6 @@ function Dashboard() {
             ))}
           </div>
         </div>
-
-
-
 
         {/* Top Rated Waiters */}
         <div className="flex flex-col gap-4 p-6 border rounded-lg bg-white shadow-sm">
@@ -316,7 +206,7 @@ function Dashboard() {
           </div>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topWaitersData}>
+              <BarChart data={topWaiters}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                 <XAxis dataKey="name" />
                 <YAxis domain={[0, 5]} />
@@ -325,7 +215,7 @@ function Dashboard() {
                   formatter={(value, name, props) => [`${value}/5 rating`, `${props.payload.reviews} reviews`]}
                 />
                 <Bar dataKey="rating" fill="#82ca9d" name="Rating">
-                  {topWaitersData?.map((entry, index) => (
+                  {topWaiters?.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Bar>
@@ -333,7 +223,7 @@ function Dashboard() {
             </ResponsiveContainer>
           </div>
           <div className="flex justify-between text-sm text-gray-500 mt-2">
-            {topWaitersData?.map((waiter, index) => (
+            {topWaiters?.map((waiter, index) => (
               <div key={index} className="text-center">
                 <p className="font-medium">{waiter.name.split(' ')[0]}</p>
                 <p>{waiter.rating}/5</p>
@@ -349,8 +239,6 @@ function Dashboard() {
         <div className="flex gap-8 flex-wrap">
           {[
             { to: "orders/add-order", icon: <ShoppingCartIcon />, label: "Place Order", color: "bg-blue-100" },
-            { to: "reservation/add-reservation", icon: <NotebookPen />, label: "Place Reservation", color: "bg-green-100" },
-            { to: "customers/add-customer", icon: <UserPlus />, label: "Add Customer", color: "bg-purple-100" },
             { to: "menu/add-food-item", icon: <Utensils />, label: "Add Food Item", color: "bg-yellow-100" },
           ].map((action, index) => (
             <Link key={index} to={action.to}>
