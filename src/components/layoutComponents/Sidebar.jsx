@@ -1,18 +1,18 @@
+import {
+  BookOpenText,
+  ChevronDown, ChevronUp,
+  LayoutDashboard,
+  LocateIcon,
+  NotebookPen,
+  ShoppingCartIcon,
+  StarIcon
+} from "lucide-react";
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { 
-  LayoutDashboard, UserRound, ShoppingCartIcon, BookOpenText, 
-  NotebookPen, BarChart4, StarIcon, ChevronDown, ChevronUp, LocateIcon
-} from "lucide-react";
 
 const menuItems = [
   { name: "Dashboard", path: "/", icon: <LayoutDashboard /> },
-  { 
-    name: "Customers", path: "/customers", icon: <UserRound />,
-    subLinks: [
-      { name: "Add Customer", path: "/customers/add-customer" },
-    ]
-   },
+   
   { 
     name: "Orders", path: "/orders", icon: <ShoppingCartIcon />,
     subLinks: [
@@ -28,17 +28,7 @@ const menuItems = [
     
   { 
     name: "Chef Orders", path: "/cheforders", icon: <NotebookPen />,
-    subLinks: [
-      { name: "Add Reservation", path: "/reservation/add-reservation" },
-    ]
   },
-  { 
-    name: "Location", path: "/locations", icon: <LocateIcon />,
-    subLinks: [
-      { name: "Add Location", path: "/locations/add-location" },
-    ]
-  },
-  { name: "Analytics", path: "/analytics", icon: <BarChart4 /> },
   { name: "Reviews", path: "/reviews", icon: <StarIcon /> },
 ];
 
@@ -48,10 +38,10 @@ const Sidebar = () => {
 
   const handleMenuClick = (item, event) => {
     if (item.subLinks) {
-      event.preventDefault(); // Prevent full navigation if it has sublinks
+      event.preventDefault();  
       setOpenMenus((prev) => ({ ...prev, [item.name]: !prev[item.name] }));
     }
-    navigate(item.path); // Navigate even when toggling submenu
+    navigate(item.path); 
   };
 
   return (

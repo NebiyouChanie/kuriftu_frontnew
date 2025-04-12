@@ -4,7 +4,6 @@ import axios from 'axios';
 import { format } from 'date-fns';
 
 const Reviews = () => {
-  // State management
   const [reviews, setReviews] = useState([]);
   const [stats, setStats] = useState({
     averageRating: 0,
@@ -19,22 +18,13 @@ const Reviews = () => {
   const [replyingTo, setReplyingTo] = useState(null);
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
-  // API base URL
-  const API_BASE_URL = 'http://localhost:5001/api/orders';
-
-  // Fetch reviews and stats from backend
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        const response = await axios.get('http://localhost:5001/api/orders/analytics/satisfaction');
         
-        // Fetch both reviews and stats in parallel
-        const [analyticsResponse] = await Promise.all([
-          axios.get(`${API_BASE_URL}/analytics/satisfaction`)
-        ]);
-
-        // Transform reviews data
-        const formattedReviews = analyticsResponse.data.recentFeedback.map((feedback) => ({
+        const formattedReviews = response.data.recentFeedback.map((feedback) => ({
           id: feedback._id,
           foodItemId: feedback.foodItemId,
           customerName: feedback.user || 'Anonymous',
@@ -43,15 +33,14 @@ const Reviews = () => {
           comment: feedback.comment,
           sentiment: feedback.sentiment,
           foodItem: feedback.foodItem,
-          replied: feedback.reply ? true : false,
+          replied: !!feedback.reply,
           reply: feedback.reply || ''
         }));
 
-        // Set stats
         setStats({
-          averageRating: analyticsResponse.data.metrics.averageRating,
-          totalReviews: analyticsResponse.data.metrics.totalReviews,
-          sentimentDistribution: analyticsResponse.data.metrics.sentimentDistribution
+          averageRating: response.data.metrics.averageRating,
+          totalReviews: response.data.metrics.totalReviews,
+          sentimentDistribution: response.data.metrics.sentimentDistribution
         });
 
         setReviews(formattedReviews);
@@ -65,7 +54,6 @@ const Reviews = () => {
     fetchData();
   }, []);
 
-  // Filter reviews based on selected filter
   const filteredReviews = reviews.filter(review => {
     if (filter === 'all') return true;
     if (filter === 'new') {
@@ -80,16 +68,13 @@ const Reviews = () => {
     return true;
   });
 
-  // Handle reply submission
   const handleReply = async (reviewId, foodItemId) => {
     try {
       setIsSubmittingReply(true);
-      
-      await axios.post(`${API_BASE_URL}/food-items/${foodItemId}/feedback/${reviewId}/reply`, { 
+      await axios.post(`http://localhost:5001/api/orders/food-items/${foodItemId}/feedback/${reviewId}/reply`, { 
         reply: replyText 
       });
       
-      // Update local state
       setReviews(reviews.map(review => 
         review.id === reviewId 
           ? { ...review, replied: true, reply: replyText }
@@ -105,7 +90,6 @@ const Reviews = () => {
     }
   };
 
-  // Helper function to render star ratings
   const renderStars = (rating) => {
     return Array(5).fill(0).map((_, i) => (
       <Star 
@@ -118,7 +102,6 @@ const Reviews = () => {
     ));
   };
 
-  // Get color based on sentiment
   const getSentimentColor = (sentiment) => {
     switch (sentiment) {
       case 'positive': return 'bg-green-100 text-green-800';
@@ -218,16 +201,13 @@ const Reviews = () => {
               className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow"
             >
               <div className="flex gap-4">
-                {/* Customer Avatar */}
                 <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
                   <span className="font-semibold text-gray-600">
                     {review.customerName.charAt(0).toUpperCase()}
                   </span>
                 </div>
 
-                {/* Review Content */}
                 <div className="flex-1">
-                  {/* Review Header */}
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
                     <div>
                       <h3 className="font-semibold">{review.customerName}</h3>
@@ -244,13 +224,11 @@ const Reviews = () => {
                     </span>
                   </div>
 
-                  {/* Rating */}
                   <div className="flex items-center gap-2 mb-3">
                     <span className="font-medium">{review.rating.toFixed(1)}</span>
                     <div className="flex">{renderStars(review.rating)}</div>
                   </div>
 
-                  {/* Comment */}
                   <div className="mb-3">
                     <p className="text-gray-700">
                       {expandedReview === review.id
@@ -283,7 +261,6 @@ const Reviews = () => {
                     )}
                   </div>
 
-                  {/* Reply Section */}
                   {review.replied && (
                     <div className="bg-blue-50 p-3 rounded-md mb-3">
                       <div className="flex items-center gap-2 text-blue-600 mb-1">
@@ -294,7 +271,6 @@ const Reviews = () => {
                     </div>
                   )}
 
-                  {/* Reply Form */}
                   {replyingTo === review.id ? (
                     <div className="mt-3">
                       <textarea
